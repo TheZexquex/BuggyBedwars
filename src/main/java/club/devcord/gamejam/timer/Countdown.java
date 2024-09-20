@@ -6,14 +6,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class Countdown {
-    private final ScheduledExecutorService executorService;
+    private ScheduledExecutorService executorService;
     private boolean running;
 
-    public Countdown() {
-        this.executorService = Executors.newSingleThreadScheduledExecutor();
-    }
-
     public void start(int timeSpan, TimeUnit timeUnit, Consumer<Long> runPerStep, Runnable runAfter) {
+        this.executorService = Executors.newSingleThreadScheduledExecutor();
         running = true;
         step(timeSpan, timeUnit, runPerStep, runAfter);
     }

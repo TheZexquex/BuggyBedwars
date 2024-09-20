@@ -7,22 +7,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class Stopwatch {
-    private final ScheduledExecutorService executorService;
+    private ScheduledExecutorService executorService;
     private boolean running;
     private boolean paused;
     private Duration elapsedDuration = Duration.ZERO;
 
-    public Stopwatch() {
-        this.executorService = Executors.newSingleThreadScheduledExecutor();
-    }
-
     public void start(int stepAmount, TimeUnit timeUnit, Consumer<Duration> runAtPause, Consumer<Duration> runPerStep,  Runnable runOnShutdown) {
         running = true;
+        this.executorService = Executors.newSingleThreadScheduledExecutor();
         step(stepAmount, timeUnit, runAtPause, runPerStep, runOnShutdown);
     }
 
     public void start(long stepAmount, TimeUnit timeUnit, Consumer<Duration> runAtPause, Consumer<Duration> runPerStep, Runnable runOnShutdown) {
         running = true;
+        this.executorService = Executors.newSingleThreadScheduledExecutor();
         step(stepAmount, timeUnit, runAtPause, runPerStep, runOnShutdown);
     }
 
