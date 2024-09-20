@@ -1,13 +1,14 @@
-name: Gradle Upload
+name: Gradle Build
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   upload:
-    name: Upload to server
+    name: Build plugin
     runs-on: ubuntu-latest
 
     steps:
@@ -19,8 +20,4 @@ jobs:
           distribution: adopt
           java-version: 21
       - name: Build with Gradle
-        run: ./gradlew --build-cache test build
-      - name: Publish
-        run: ./gradlew uploadJar
-        env:
-          UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
+        run: ./gradlew --build-cache build
