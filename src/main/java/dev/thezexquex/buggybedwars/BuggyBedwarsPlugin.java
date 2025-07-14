@@ -1,0 +1,96 @@
+package dev.thezexquex.buggybedwars;
+
+
+import dev.thezexquex.buggybedwars.command.DebugCommand;
+import dev.thezexquex.buggybedwars.command.ForceStartCommand;
+import dev.thezexquex.buggybedwars.command.ShopCommand;
+import dev.thezexquex.buggybedwars.command.ShoutCommand;
+import dev.thezexquex.buggybedwars.logic.Game;
+import dev.thezexquex.buggybedwars.message.Messenger;
+import dev.thezexquex.buggybedwars.stage.common.listener.*;
+import dev.thezexquex.buggybedwars.stage.ingame.listener.*;
+import dev.thezexquex.buggybedwars.stage.lobby.listener.InventoryInteractListener;
+import dev.thezexquex.buggybedwars.stage.lobby.listener.LobbyQuitListener;
+import dev.thezexquex.buggybedwars.stage.lobby.listener.PlayerInteractListener;
+import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.incendo.cloud.SenderMapper;
+import org.incendo.cloud.bukkit.CloudBukkitCapabilities;
+import org.incendo.cloud.execution.ExecutionCoordinator;
+import org.incendo.cloud.paper.LegacyPaperCommandManager;
+
+import java.util.logging.Level;
+
+public class BuggyBedwarsPlugin extends JavaPlugin {
+    private Game game;
+    private Messenger messenger;
+    private LegacyPaperCommandManager<CommandSender> commandManager;
+
+    @Override
+    public void onEnable() {
+        this.messenger = new Messenger(getServer());
+        this.game = new Game(this);
+        game.startLobbyPhase();
+
+        registerListeners();
+        registerCommands();
+    }
+
+    private void registerListeners() {
+        var pluginManager = this.getServer().getPluginManager();
+        pluginManager.registerEvents(new AsyncChatListener(game, messenger), this);
+        pluginManager.registerEvents(new BlockBreakListener(game.blockRegistry(), game, messenger), this);
+        pluginManager.registerEvents(new BlockPlaceListener(game), this);
+        pluginManager.registerEvents(new EntityDamageListener(game, messenger), this);
+        pluginManager.registerEvents(new EntitySpawnListener(this), this);
+        pluginManager.registerEvents(new ExplodeListener(game.blockRegistry()), this);
+        pluginManager.registerEvents(new FoodLevelChangeListener(), this);
+        pluginManager.registerEvents(new InventoryInteractListener(game), this);
+        pluginManager.registerEvents(new LobbyQuitListener(game, messenger), this);
+        pluginManager.registerEvents(new NaturalHealthRegenerationListener(), this);
+        pluginManager.registerEvents(new PlayerDropItemListener(), this);
+        pluginManager.registerEvents(new PlayerInteractListener(game), this);
+        pluginManager.registerEvents(new PlayerJoinListener(this), this);
+        pluginManager.registerEvents(new PlayerMoveListener(game, messenger), this);
+        pluginManager.registerEvents(new PlayerQuitListener(game, messenger), this);
+        pluginManager.registerEvents(new ProjectileHitListener(), this);
+        pluginManager.registerEvents(new ProjectileLaunchListener(this, game), this);
+        pluginManager.registerEvents(new TeamBedStateChangeListener(this), this);
+        pluginManager.registerEvents(game.blockRegistry(), this);
+    }
+
+    private void registerCommands() {
+        try {
+            this.commandManager = new LegacyPaperCommandManager<>(
+                    this,
+                    ExecutionCoordinator.simpleCoordinator(),
+                    SenderMapper.identity()
+            );
+
+            if (commandManager.hasCapability(CloudBukkitCapabilities.NATIVE_BRIGADIER)) {
+                commandManager.registerBrigadier();
+            }
+        } catch (Exception exception) {
+            this.getLogger().log(Level.SEVERE, "Failed to initialize command manager", exception);
+            this.getServer().getPluginManager().disablePlugin(this);
+        }
+
+        new ForceStartCommand(this).register(commandManager);
+        new DebugCommand(this).register(commandManager);
+        new ShoutCommand(this).register(commandManager);
+        new ShopCommand(this).register(commandManager);
+    }
+
+    @Override
+    public void onDisable() {
+        game.tearDown();
+    }
+
+    public Messenger messenger() {
+        return messenger;
+    }
+
+    public Game game() {
+        return game;
+    }
+}

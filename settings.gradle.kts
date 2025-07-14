@@ -1,8 +1,8 @@
-rootProject.name = "gamejam"
+rootProject.name = "BuggyBedwars"
 
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        maven("https://papermc.io/repo/repository/Maven-public/")
+        maven("https://repo.papermc.io/repository/Maven-public/")
     }
 }
